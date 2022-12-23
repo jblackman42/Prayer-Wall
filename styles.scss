@@ -4,6 +4,9 @@ body, html {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 $card-size: 375px;
+prayer-wall {
+    background-color: #f4f6f8;
+}
 #prayers-container {
     display: grid;
     grid-template-columns: $card-size $card-size $card-size;
@@ -13,7 +16,6 @@ $card-size: 375px;
 
     margin: 0 auto;
 
-    background-color: #f4f6f8;
 }
 .prayer-card {
     display: flex;
@@ -89,14 +91,55 @@ $card-size: 375px;
     }
 }
 
+#prayer-form {
+    display: flex;
+    flex-wrap: wrap;
+    width: 800px;
+    max-width: 95vw;
+    margin: 1rem auto;
+    label.required {
+        position: relative;
+        &::after {
+            content: '*';
+            position: relative;
+            top: 0;
+            right: 0;
+            color: red;
+        }
+    }
+    input {
+        width: 100%;
+        font-size: 18px;
+        margin: .25rem 0;
+        position: relative;
+        &[type='checkbox'] {
+            width: max-content;
+            margin: .25rem .5rem;
+        }
+    }
+    textarea {
+        margin: .25rem 0;
+        resize: none;
+        width: 100%;
+        height: 80px;
+        font-family: inherit;
+        font-size: 16px;
+    }
+}
 
 // loading
+.loading {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+}
 .lds-spinner {
-    color: official;
+    color: black;
     display: inline-block;
     position: relative;
     width: 80px;
     height: 80px;
+    margin: 0 auto;
 }
 .lds-spinner div {
     transform-origin: 40px 40px;
@@ -111,7 +154,7 @@ $card-size: 375px;
     width: 6px;
     height: 18px;
     border-radius: 20%;
-    background: #fff;
+    background: black;
 }
 .lds-spinner div:nth-child(1) {
     transform: rotate(0deg);
