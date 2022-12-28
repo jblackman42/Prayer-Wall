@@ -3,23 +3,67 @@ class PrayerWall extends HTMLElement {
         super();
         this.prayerRequests = [];
 
+        this.draw();
+    }
+
+    draw = () => {
+        this.innerHTML = '';
         const prayerFormContainer = document.createElement('div');
             prayerFormContainer.id = 'prayer-form-container';
             prayerFormContainer.innerHTML = `
+                <div id="tos-container">
+                    <div id="tos-header">
+                        <h2>Prayer Wall Terms of Use</h2>
+                        <i id="dropdown-icon" class='fas fa-angle-down' style="font-size: 24px;"></i>
+                    </div>
+                    <div id="dropdown" class="closed">
+                        <p>You are about to post a prayer request on the Pure Heart Prayer Wall. Doing so will make public the information shared. Please be careful and respectful in how you share other's information. Only use names when it is pertinent or helpful, Be careful not to slander, accuse, or defame anyone. No soliciting from people on the Prayer Wall.</p>
+
+                        <p>Matt 7:12 - Therefore, whatever you want men to do to you, do also to them, for this is the Law and the Prophets. NKJV</p>
+                        
+                        <p>The opinions expressed on this site are the opinions of the participating user.  Pure Heart Church expressly DOES NOT endorse any user-submitted material, content, and/or links provided by the participating user or assume any liability for any actions of the participating user.</p>
+                        
+                        <p>E-mail addresses will not appear on the prayer wall, however they are required to submit a request. This helps us cut down on spam. Your email address will be visible to the Pure Heart Prayer Team. Our prayer team may contact you by email if they feel led to respond directly to you about your prayer request.</p>
+                    </div>
+                </div>
+
                 <form id="prayer-form">
-                    <label for="Author_Name" class="required">Name:</label>
-                    <input type="text" name="Author_Name" id="Author_Name" required>
-                    <label for="Author_Email" class="required">Email:</label>
-                    <input type="email" name="Author_Email" id="Author_Email" required>
-                    <label for="Author_Phone">Phone Number:</label>
-                    <input type="tel" name="Author_Phone" id="Author_Phone">
-                    <label for="Prayer_Title">Prayer Title:</label>
-                    <input type="text" name="Prayer_Title" id="Prayer_Title">
-                    <label for="Prayer_Body" class="required">Prayer Body:</label>
-                    <textarea name="Prayer_Body" id="Prayer_Body" required></textarea>
-                    <label for="Private">Private:</label>
-                    <input type="checkbox" name="Private" id="Private">
+                    <p>You may add your prayer request to our prayer wall using the form below. Once your prayer request is received, we will share it according to your instructions. Before your request can be shared <strong>it will be moderated by our prayer team to check for inappropriate content.</strong> Feel free to submit as many prayer requests as you like! Please limit your prayer request to 250 characters.</p>    
+
+                    <div class="input-container">
+                        <input type="text" name="Author_Name" id="Author_Name" placeholder="Name" required>
+                    </div>
+                    
+                    <div class="input-container">
+                        <input type="email" name="Author_Email" id="Author_Email" placeholder="Email" required>
+                    </div>
+
+                    <div class="input-container">
+                        <input type="tel" name="Author_Phone" id="Author_Phone" placeholder="Phone Number">
+                    </div>
+                    
+                    <div class="input-container">
+                        <input type="text" name="Prayer_Title" id="Prayer_Title" placeholder="Prayer Title">
+                    </div>
+
+                    <div class="input-container">
+                        <textarea name="Prayer_Body" id="Prayer_Body" placeholder="Prayer Request" maxlength="250" required></textarea>
+                    </div>
+
+                    <div class="checkbox-container">
+                        <input type="checkbox" name="Private" id="Private">
+                        <label for="Private">Share Anonymously</label>
+                    </div>
+
+                    <div class="checkbox-container">
+                        <input type="checkbox" name="Notify" id="Notify">
+                        <label for="Notify"> Email Me When Someone Prays</label>
+                    </div>
+
+                    <div class="g-recaptcha" id="captcha-container" data-sitekey="6LebiLQjAAAAAOR3XFrxo5wfjw1Ob73WbZKy9d2D" render="explicit"></div>
                     <button type="submit">submit</button>
+
+                    <p id="error-msg">Please Complete reCAPTCHA</p>
                 </form>
             `
 
@@ -34,6 +78,9 @@ class PrayerWall extends HTMLElement {
         this.appendChild(this.prayersContainer)
         this.appendChild(loadingIconDOM)
 
+        const tosContainerHeaderDOM = document.getElementById('tos-header');
+            tosContainerHeaderDOM.onclick = this.toggleTOS
+
         const prayerFormDOM = document.getElementById('prayer-form');
             prayerFormDOM.onsubmit = this.handleSubmit
 
@@ -44,12 +91,22 @@ class PrayerWall extends HTMLElement {
         const container = document.getElementById('prayers-container')
         const bottom = container.offsetHeight - window.innerHeight;
         if (window.scrollY < bottom) return;
-        console.log('you\'re at the bottom of the page')
-
+        //checks if user has scrolled to the bottom of the prayer widget
         //disabled load more so it doesn't run multiple times
+
         document.removeEventListener('scroll', this.handleScroll)
 
+        //updates and loads more prayers
         this.update();
+    }
+
+    toggleTOS = () => {
+        const dropdownDOM = document.getElementById('dropdown');
+        const dropdownIconDOM = document.getElementById('dropdown-icon');
+
+        dropdownIconDOM.classList.toggle('fa-angle-down')
+        dropdownIconDOM.classList.toggle('fa-angle-up')
+        dropdownDOM.classList.toggle('closed')
     }
 
     update = async () => {
@@ -115,7 +172,7 @@ class PrayerWall extends HTMLElement {
     }
     prayed = async (id) => {
         const prayBtn = document.getElementById(`pray-btn-${id}`)
-            prayBtn.disabled = true
+        prayBtn.disabled = true
         const data = await axios({
             method: 'get',
             url: `http://localhost:3000/api/prayer-wall/${id}`
@@ -147,25 +204,49 @@ class PrayerWall extends HTMLElement {
     }
     handleSubmit = async (e) => {
         e.preventDefault();
-        const authorNameValue = document.getElementById('Author_Name').value
-        const authorEmailValue = document.getElementById('Author_Email').value
-        const authorPhoneValue = document.getElementById('Author_Phone').value
-        const prayerTitleValue = document.getElementById('Prayer_Title').value
-        const prayerBodyValue = document.getElementById('Prayer_Body').value
-        const privateValue = document.getElementById('Private').checked
+
+        const recaptchaResponse = document.getElementById('g-recaptcha-response');
+        const errorMsgDOM = document.getElementById('error-msg');
+        if (!recaptchaResponse.value) {
+            errorMsgDOM.style.display = 'block';
+            errorMsgDOM.style.visibility = 'visible';
+            return
+        } else {
+            errorMsgDOM.style.display = 'none';
+            errorMsgDOM.style.visibility = 'hidden';
+        }
+
+        const authorNameDOM = document.getElementById('Author_Name');
+        const authorEmailDOM = document.getElementById('Author_Email');
+        const authorPhoneDOM = document.getElementById('Author_Phone');
+        const prayerTitleDOM = document.getElementById('Prayer_Title');
+        const prayerBodyDOM = document.getElementById('Prayer_Body');
+        const privateDOM = document.getElementById('Private');
+        const notifyDOM = document.getElementById('Notify');
 
         const prayer = {
-            Author_Name: authorNameValue,
-            Author_Email: authorEmailValue,
-            Author_Phone: authorPhoneValue,
+            Author_Name: authorNameDOM.value,
+            Author_Email: authorEmailDOM.value,
+            Author_Phone: authorPhoneDOM.value,
             Date_Created: new Date().toISOString(),
-            Prayer_Title: prayerTitleValue,
-            Prayer_Body: prayerBodyValue,
+            Prayer_Title: prayerTitleDOM.value,
+            Prayer_Body: prayerBodyDOM.value,
             Prayer_Status_ID: 1,
             Prayer_Count: 0,
-            Private: privateValue
+            Private: privateDOM.checked,
+            Prayer_Notify: notifyDOM.checked
         }
-        await this.post(prayer)
+
+        try {
+            await this.post(prayer)
+            this.draw();            
+        } catch (err) {
+            errorMsgDOM.innerText = 'Something Went Wrong - Try Again Later'
+            errorMsgDOM.style.display = 'block';
+            errorMsgDOM.style.visibility = 'visible';
+
+            console.error(err)
+        }
     }
     post = async (prayer) => {
         await axios({
@@ -173,7 +254,7 @@ class PrayerWall extends HTMLElement {
             url: 'http://localhost:3000/api/prayer-wall',
             data: prayer
         })
-        .then(response => console.log(response))
+        .then(response => response)
         .catch(err => console.error(err))
     }
 }

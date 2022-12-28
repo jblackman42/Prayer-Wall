@@ -9,12 +9,38 @@ prayer-wall {
 }
 
 #prayers-container {
-  display: grid;
-  grid-template-columns: 375px 375px 375px;
-  place-content: center;
+  display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 1rem;
+  max-width: 1280px;
   margin: 0 auto;
+}
+
+#tos-container {
+  width: 800px;
+  max-width: 95vw;
+  margin: 1rem auto;
+  padding: 1rem 2rem;
+  background-color: #ecf0f1;
+  border-radius: 8px;
+}
+#tos-container #tos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+#tos-container #tos-header h2 {
+  margin: 0.5rem 0;
+}
+#tos-container #dropdown {
+  overflow: hidden;
+  max-height: 350px;
+  transition: max-height 300ms linear;
+}
+#tos-container #dropdown.closed {
+  max-height: 0;
 }
 
 .prayer-card {
@@ -93,36 +119,78 @@ prayer-wall {
   width: 800px;
   max-width: 95vw;
   margin: 1rem auto;
+  padding: 1rem 2rem;
+  background-color: #ecf0f1;
+  border-radius: 8px;
 }
-#prayer-form label.required {
-  position: relative;
+#prayer-form > p {
+  margin: 0;
 }
-#prayer-form label.required::after {
-  content: "*";
-  position: relative;
-  top: 0;
-  right: 0;
-  color: red;
-}
-#prayer-form input {
+#prayer-form .input-container {
   width: 100%;
-  font-size: 18px;
-  margin: 0.25rem 0;
   position: relative;
+  margin: 0.5rem 0;
 }
-#prayer-form input[type=checkbox] {
-  width: -webkit-max-content;
-  width: -moz-max-content;
-  width: max-content;
+#prayer-form .input-container::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 1px;
+  background-color: #898989;
+}
+#prayer-form .input-container:focus-within::before {
+  height: 4px;
+  background-color: #7b2d26;
+  transition: height 100ms linear, background-color 100ms;
+}
+#prayer-form .input-container input, #prayer-form .input-container textarea {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-size: 18px;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  background-color: transparent;
+  border: none;
+}
+#prayer-form .input-container input[type=checkbox] {
   margin: 0.25rem 0.5rem;
 }
-#prayer-form textarea {
-  margin: 0.25rem 0;
+#prayer-form .input-container textarea {
   resize: none;
+  height: 100px;
+}
+#prayer-form .checkbox-container {
+  width: 50%;
+}
+#prayer-form #captcha-container {
+  margin-top: 0.5rem;
+}
+#prayer-form button {
   width: 100%;
-  height: 80px;
-  font-family: inherit;
-  font-size: 16px;
+  background-color: #7b2d26;
+  border: 2px solid #7b2d26;
+  color: white;
+  font-size: 1rem;
+  text-transform: capitalize;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#prayer-form button:active {
+  background-color: transparent;
+  color: black;
+}
+#prayer-form p#error-msg {
+  color: red;
+  margin: 0;
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+  display: none;
+  visibility: hidden;
 }
 
 .loading {
