@@ -2,11 +2,13 @@ class PrayerWall extends HTMLElement {
     constructor() {
         super();
         this.prayerRequests = [];
+        this.requestURL = 'https://phc.events'
 
         this.draw();
     }
 
     draw = () => {
+        this.prayerRequests = [];
         this.innerHTML = '';
         const prayerFormContainer = document.createElement('div');
             prayerFormContainer.id = 'prayer-form-container';
@@ -30,11 +32,11 @@ class PrayerWall extends HTMLElement {
                 <form id="prayer-form">
                     <p>You may add your prayer request to our prayer wall using the form below. Once your prayer request is received, we will share it according to your instructions. Before your request can be shared <strong>it will be moderated by our prayer team to check for inappropriate content.</strong> Feel free to submit as many prayer requests as you like! Please limit your prayer request to 250 characters.</p>    
 
-                    <div class="input-container">
+                    <div class="input-container required">
                         <input type="text" name="Author_Name" id="Author_Name" placeholder="Name" required>
                     </div>
                     
-                    <div class="input-container">
+                    <div class="input-container required">
                         <input type="email" name="Author_Email" id="Author_Email" placeholder="Email" required>
                     </div>
 
@@ -46,7 +48,7 @@ class PrayerWall extends HTMLElement {
                         <input type="text" name="Prayer_Title" id="Prayer_Title" placeholder="Prayer Title">
                     </div>
 
-                    <div class="input-container">
+                    <div class="input-container required">
                         <textarea name="Prayer_Body" id="Prayer_Body" placeholder="Prayer Request" maxlength="250" required></textarea>
                     </div>
 
@@ -128,7 +130,7 @@ class PrayerWall extends HTMLElement {
         // }
         const data = await axios({
             method: 'get',
-            url: `http://localhost:3000/api/prayer-wall?skip=${this.prayerRequests.length}`
+            url: `${this.requestURL}/api/prayer-wall?skip=${this.prayerRequests.length}`
         })
             .then(response => response.data)
         const {prayer_requests} = data;
@@ -175,24 +177,43 @@ class PrayerWall extends HTMLElement {
         prayBtn.disabled = true
         const data = await axios({
             method: 'get',
-            url: `http://localhost:3000/api/prayer-wall/${id}`
+            url: `${this.requestURL}/api/prayer-wall/${id}`
         })
         .then(response => response.data)
         const {prayer_request: prayerRequest} = data;
+        const {Prayer_Notify} = prayerRequest;
+
         prayerRequest.Prayer_Count ++;
+        if (Prayer_Notify) prayerRequest.Notification_Scheduled = 1;
 
         await axios({
             method: 'put',
-            url: `http://localhost:3000/api/prayer-wall`,
+            url: `${this.requestURL}/api/prayer-wall`,
             data: prayerRequest
         })
         .then(response => response.data)
         .catch(err => console.error(err))
 
-        const {Author_Name, Date_Created, Prayer_Title, Prayer_Body, Prayer_Count, Prayer_Request_ID} = prayerRequest;
+        const {Author_Name, Author_Email, Date_Created, Prayer_Title, Prayer_Body, Prayer_Count, Prayer_Request_ID} = prayerRequest;
+
+        // console.log(Author_Email)
+        // await axios({
+        //     method: 'post',
+        //     url: 'http://localhost:3000/api/prayer-wall/send-email',
+        //     headers: {
+        //         'content-type': 'application/json',
+        //         'authCode': 'bowling-pins-are-cool'
+        //     },
+        //     data: {
+        //         recipientName: Author_Name,
+        //         recipientEmail: 'JBlackman@pureheart.org',
+        //         // recipientEmail: Author_Email,
+        //         Prayer_Count: Prayer_Count
+        //     }
+        // })
         const currPrayerCard = document.getElementById(`prayer-${id}`);
         currPrayerCard.innerHTML = `
-            <h2 class="name">${Author_Name || 'Anonymous'}</h2>
+            <h2 class="name">${Author_Name}</h2>
             <p class="date">${new Date(Date_Created).toLocaleDateString('en-us', {weekday:"long", year:"numeric", month:"short", day:"numeric"})}</p>
             <div class="prayer-body">
                 ${Prayer_Title ? `<p class="prayer-title">${Prayer_Title}</p>` : ''}
@@ -251,7 +272,7 @@ class PrayerWall extends HTMLElement {
     post = async (prayer) => {
         await axios({
             method: 'post',
-            url: 'http://localhost:3000/api/prayer-wall',
+            url: `${this.requestURL}/api/prayer-wall`,
             data: prayer
         })
         .then(response => response)
