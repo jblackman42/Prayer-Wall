@@ -112,6 +112,7 @@ class PrayerWall extends HTMLElement {
     }
 
     update = async () => {
+        // prayers.length = 3;
         // for (let i = 0; i < prayers.length; i++) {
         //     const {Author_Name, Author_Email, Author_Phone, Date_Created, Prayer_Body} = prayers[i];
         //     const currPrayer = {
@@ -121,7 +122,7 @@ class PrayerWall extends HTMLElement {
         //         Date_Created: new Date(Date_Created).toISOString(),
         //         Prayer_Title: null,
         //         Prayer_Body: Prayer_Body,
-        //         Prayer_Status_ID: 2,
+        //         Prayer_Status_ID: 1,
         //         Prayer_Count: 1,
         //         Private: false
         //     }
